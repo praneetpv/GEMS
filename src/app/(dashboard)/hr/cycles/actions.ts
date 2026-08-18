@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import type { CycleStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { hasFullAccess } from '@/lib/roles';
@@ -35,7 +36,7 @@ export async function createCycle(formData: FormData) {
   redirect('/hr/cycles?message=cycle_created');
 }
 
-const NEXT_STATUS: Record<string, string> = {
+const NEXT_STATUS: Partial<Record<CycleStatus, CycleStatus>> = {
   DRAFT: 'ACTIVE',
   ACTIVE: 'REVIEW',
   REVIEW: 'CLOSED',
@@ -53,7 +54,7 @@ export async function advanceCycle(formData: FormData) {
   const nextStatus = NEXT_STATUS[cycle.status];
   if (!nextStatus) redirect(`/hr/cycles/${cycleId}?error=already_closed`);
 
-  await prisma.appraisalCycle.update({ where: { id: cycleId }, data: { status: nextStatus as any } });
+  await prisma.appraisalCycle.update({ where: { id: cycleId }, data: { status: nextStatus } });
 
   let publishedCount = 0;
   if (nextStatus === 'CLOSED') {
