@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 bg-navy text-white flex flex-col">
         <div className="px-5 py-6">
-          <p className="font-serif font-semibold text-lg">Dbiz Appraisal</p>
+          <p className="font-serif font-semibold text-lg">Dbiz GEMS</p>
           <p className="text-xs text-white/60 mt-1">{user.name}</p>
           <p className="text-xs text-white/40">{roleLabel(user.role)}</p>
         </div>

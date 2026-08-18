@@ -12,7 +12,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
   return (
     <main className="min-h-screen flex items-center justify-center bg-paper px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8 text-center">
-        <h1 className="text-xl font-serif font-semibold text-ink mb-2">Dbiz Employee Appraisal</h1>
+        <h1 className="text-xl font-serif font-semibold text-ink mb-2">Dbiz GEMS</h1>
         <p className="text-sm text-ink/60 mb-6">Sign in with your Dbiz Microsoft account.</p>
         {error ? (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">

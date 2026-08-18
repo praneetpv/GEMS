@@ -6,7 +6,7 @@ const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '700', '800'
 const dmMono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-dm-mono' });
 
 export const metadata: Metadata = {
-  title: 'Dbiz Employee Appraisal',
+  title: 'Dbiz GEMS',
   description: 'Continuous feedback and annual appraisal system for Dbiz',
 };
 

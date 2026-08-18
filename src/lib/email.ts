@@ -79,7 +79,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 function wrap(bodyHtml: string): string {
   return `<div style="font-family:sans-serif;color:#111;max-width:560px;margin:0 auto;">
     ${bodyHtml}
-    <p style="margin-top:32px;font-size:12px;color:#888;">Dbiz Employee Appraisal</p>
+    <p style="margin-top:32px;font-size:12px;color:#888;">Dbiz GEMS</p>
   </div>`;
 }
 
