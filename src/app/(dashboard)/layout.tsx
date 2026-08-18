@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/session';
 import { roleLabel, hasFullAccess, isSuperAdmin } from '@/lib/roles';
+import { GemsWordmark } from '@/components/gems-wordmark';
 import { logout } from '../logout-action';
 
 const NAV_ITEMS: { href: string; label: string; show: (role: string) => boolean }[] = [
@@ -25,8 +26,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 bg-navy text-white flex flex-col">
         <div className="px-5 py-6">
-          <p className="font-serif font-semibold text-lg">Dbiz GEMS</p>
-          <p className="text-xs text-white/60 mt-1">{user.name}</p>
+          <GemsWordmark />
+          <p className="text-xs text-white/60 mt-3">{user.name}</p>
           <p className="text-xs text-white/40">{roleLabel(user.role)}</p>
         </div>
         <nav className="flex-1 px-2 space-y-1">
