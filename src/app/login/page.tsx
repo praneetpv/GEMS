@@ -26,6 +26,11 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
         >
           Sign in with Microsoft
         </a>
+        {process.env.NODE_ENV !== 'production' ? (
+          <a href="/dev-login" className="block text-xs text-ink/40 hover:underline mt-4">
+            Dev login (local only)
+          </a>
+        ) : null}
       </div>
     </main>
   );
