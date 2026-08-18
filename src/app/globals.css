@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #fafafa; /* paper -- DBiz --brand-bg */
+  color: #111111; /* ink -- DBiz --brand-text */
+}

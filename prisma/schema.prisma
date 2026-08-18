@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  SUPERVISOR
+  HR
+  SUPER_ADMIN
+}
+
+enum GoalStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum ReviewLevel {
+  L1
+  L2
+}
+
+enum ReviewStatus {
+  PENDING
+  SUBMITTED
+}
+
+enum CycleStatus {
+  DRAFT
+  ACTIVE
+  REVIEW
+  CLOSED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  employeeNo    String   @unique
+  name          String
+  email         String   @unique
+  role          Role     @default(EMPLOYEE)
+  orgRole       String?
+  entraObjectId String?  @unique
+  managerId     String?
+  manager       User?    @relation("ManagerReports", fields: [managerId], references: [id])
+  reports       User[]   @relation("ManagerReports")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  goalsOwned       Goal[]       @relation("GoalOwner")
+  goalsSetBy       Goal[]       @relation("GoalSetter")
+  goalUpdates      GoalUpdate[]
+  feedbackGiven    Feedback[]   @relation("FeedbackAuthor")
+  feedbackReceived Feedback[]   @relation("FeedbackSubject")
+  reviews          Review[]     @relation("Reviewer")
+  scores           AppraisalScore[]
+  auditLogs        AuditLog[]   @relation("AuditActor")
+}
+
+model AppraisalCycle {
+  id        String      @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  reviewDue DateTime
+  status    CycleStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+
+  goals  Goal[]
+  scores AppraisalScore[]
+}
+
+model Goal {
+  id          String         @id @default(cuid())
+  cycleId     String
+  cycle       AppraisalCycle @relation(fields: [cycleId], references: [id])
+  ownerId     String
+  owner       User           @relation("GoalOwner", fields: [ownerId], references: [id])
+  setById     String
+  setBy       User           @relation("GoalSetter", fields: [setById], references: [id])
+  title       String
+  description String         @db.Text
+  weight      Int?
+  status      GoalStatus     @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+
+  updates  GoalUpdate[]
+  feedback Feedback[]
+  reviews  Review[]
+
+  @@index([cycleId, ownerId])
+}
+
+// Append-only progress log — a goal's current state is a computed roll-up
+// of these rows, never a mutable field on Goal itself ("derive, don't
+// store", same philosophy as the GlowUp LMS this project is a sibling to).
+model GoalUpdate {
+  id          String   @id @default(cuid())
+  goalId      String
+  goal        Goal     @relation(fields: [goalId], references: [id])
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  note        String   @db.Text
+  progressPct Int?
+  createdAt   DateTime @default(now())
+
+  @@index([goalId])
+}
+
+// Append-only supervisor comments. goalId nullable = general feedback
+// about the employee, not tied to one specific goal.
+model Feedback {
+  id         String   @id @default(cuid())
+  goalId     String?
+  goal       Goal?    @relation(fields: [goalId], references: [id])
+  employeeId String
+  employee   User     @relation("FeedbackSubject", fields: [employeeId], references: [id])
+  authorId   String
+  author     User     @relation("FeedbackAuthor", fields: [authorId], references: [id])
+  comment    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([goalId])
+}
+
+// Single model for both L1 and L2 review, level-tagged rather than split
+// into two models — L1/L2 are structurally identical (same shape, same
+// parent Goal, same PENDING -> SUBMITTED lifecycle); only *who* may fill
+// one in and the L1-before-L2 ordering differ, and that's authorization
+// logic that belongs in the Server Action, not the schema. Contrast with
+// GlowUp's deliberate Quiz/Exam model split, which exists because those two
+// are genuinely structurally divergent (different question banks, retake
+// rules, scoring windows) — not the case here.
+model Review {
+  id          String       @id @default(cuid())
+  goalId      String
+  goal        Goal         @relation(fields: [goalId], references: [id])
+  level       ReviewLevel
+  status      ReviewStatus @default(PENDING)
+  reviewerId  String?
+  reviewer    User?        @relation("Reviewer", fields: [reviewerId], references: [id])
+  rating      Int?
+  comment     String?      @db.Text
+  remindedAt  DateTime?
+  submittedAt DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@unique([goalId, level])
+  @@index([reviewerId])
+}
+
+model AppraisalScore {
+  id            String         @id @default(cuid())
+  cycleId       String
+  cycle         AppraisalCycle @relation(fields: [cycleId], references: [id])
+  employeeId    String
+  employee      User           @relation(fields: [employeeId], references: [id])
+  overallRating Decimal?       @db.Decimal(4, 2)
+  publishedAt   DateTime?
+  createdAt     DateTime       @default(now())
+
+  @@unique([cycleId, employeeId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  actorLabel String?
+  summary    String   @db.Text
+  targetType String?
+  targetId   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
